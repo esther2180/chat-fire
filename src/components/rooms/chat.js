@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
+import { Field, reduxForm } from 'redux-form';
 import { connect } from 'react-redux';
-import { getMessages, getRoomInfo } from '../../actions';
+import { getMessages, getRoomInfo, sendMessage } from '../../actions';
+import Input from '../general/input';
 
 class Chat extends Component {
     roomRef = null;
@@ -10,7 +12,11 @@ class Chat extends Component {
     componentDidMount() {
         const { getRoomInfo, match: { params } } = this.props;
 
-        this.roomRef = getRoomInfo(params.room_id);
+        this.logRef = getRoomInfo(params.room_id);
+    }
+
+    scrollToBottom() {
+        this.logRef.scrollTop = this.logRef.scrollHeight;
     }
 
    
@@ -20,6 +26,8 @@ class Chat extends Component {
         if (chatId && prevProps.chatId !== chatId){
             this.chatRef = getMessages(chatId);
         }
+
+        this.scrollToBottom();
     }
 
     componentWillUnmount() {
@@ -31,9 +39,20 @@ class Chat extends Component {
         }
     }
 
+    handleSendMessage = ({message}) => {
+        const { chatId, reset, sendMessage } = this.props;
+
+        if(chatId){
+            sendMessage(chatId, message);
+            reset();
+        }
+
+    }
+
 
     render() {
-        const { description, messages, title, topic } = this.props;
+        const { description, handleSubmit, messages, title, topic } = this.props;
+
         const messageElements = Object.keys(messages).map(key => {
             const { name, message } = messages[key];
             return (
@@ -50,13 +69,25 @@ class Chat extends Component {
                 <p className="grey-text">{description}</p>
             </div>
                 
-                <ul className="collection">
+                <ul ref={e => this.logRef = e} className="collection chat-log">
                     {messageElements}
                 </ul>
+                <form className="row" onSubmit={handleSubmit(this.handleSendMessage)}>
+                    <div className="col s10">
+                        <Field name="message" label="Message" component={Input} />
+                    </div>
+                    <div className="col s2 center-align">
+                        <button className="btn orange send-button">Send</button>
+                    </div>
+                </form>
             </div>
         );
     }
 }
+
+Chat = reduxForm({
+    form: 'chat-message'
+})(Chat);
 
 function mapStateToProps(state){
     return { ...state.chat };
@@ -64,5 +95,6 @@ function mapStateToProps(state){
 
 export default connect(mapStateToProps, {
     getMessages,
-    getRoomInfo
+    getRoomInfo,
+    sendMessage
 })(Chat);

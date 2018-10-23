@@ -1,6 +1,22 @@
 import types from './types';
 import { db } from '../firebase';
 
+export const createChatRoom = roomDetails => async dispatch => {
+    const botMessage = {
+        message: `Welcome to ${roomDetails.title}`,
+        name: 'Chat-Bot' 
+    };
+
+    const logKey = await db.ref('/chat-logs').push().key;
+
+    roomDetails.chatId = logKey;
+    const roomRef = await db.ref('/chat-rooms').push(roomDetails);
+
+    await db.ref(`/chat-logs/${logKey}`).push(botMessage);
+
+    return roomRef.key;
+}
+
 export const getMessages = (chatId) => dispatch => {
     const dbRef = db.ref(`/chat-logs/${chatId}`);
 
@@ -40,18 +56,13 @@ export const getRoomList = () => dispatch => {
     });
 }
 
-export const createChatRoom = roomDetails => async dispatch => {
-    const botMessage = {
-        message: `Welcome to ${roomDetails.title}`,
-        name: 'Chat-Bot' 
-    };
 
-    const logKey = await db.ref('/chat-logs').push().key;
+export const sendMessage = (chatId, message) => dispatch => {
 
-    roomDetails.chatId = logKey;
-    const roomRef = await db.ref('/chat-rooms').push(roomDetails);
+    const newMessage = {
+        message,
+        name: 'Esther'
+    }
 
-    await db.ref(`/chat-logs/${logKey}`).push(botMessage);
-
-    return roomRef.key;
+    db.ref(`/chat-logs/${chatId}`).push(newMessage);
 }
