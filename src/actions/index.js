@@ -5,7 +5,6 @@ export const getMessages = (chatId) => dispatch => {
     const dbRef = db.ref(`/chat-logs/${chatId}`);
 
     dbRef.on('value', (snapshot) => {
-        console.log('DB Snapshot:', snapshot.val());
 
         dispatch({
             type: types.GET_CHAT_MESSAGES,
@@ -20,7 +19,6 @@ export const getRoomInfo = roomId => dispatch => {
     const dbRef = db.ref(`/chat-rooms/${roomId}`);
 
     dbRef.on('value', snapshot => {
-        console.log('Room Snapshot:', snapshot.val());
 
         dispatch({
             type: types.GET_ROOM_INFORMATION,
@@ -29,6 +27,17 @@ export const getRoomInfo = roomId => dispatch => {
     });
 
     return dbRef;
+}
+
+export const getRoomList = () => dispatch => {
+    const dbRef = db.ref('/chat-rooms');
+
+    dbRef.on('value', snapshot => {
+        dispatch({
+            type: types.GET_ROOM_LIST,
+            roomList: snapshot.val()
+        });
+    });
 }
 
 export const createChatRoom = roomDetails => async dispatch => {
