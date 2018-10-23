@@ -5,10 +5,10 @@ import { createChatRoom } from '../../actions';
 import Input from '../general/input';
 
 class CreateRoom extends Component {
-    handleSaveRoom = values => {
-        console.log('Handle Save Room:', values);
+    handleSaveRoom = async values => {
+        const roomId = await this.props.createChatRoom(values);
 
-        this.props.createChatRoom(values);
+        this.props.history.push(`/rooms/${roomId}`);
     }
 
     render() {
